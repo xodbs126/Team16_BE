@@ -1,16 +1,24 @@
 package com.kakaotechcampus.team16be.auth.service;
 
 import com.kakaotechcampus.team16be.auth.client.KakaoAuthClient;
+import com.kakaotechcampus.team16be.auth.config.KakaoProperties;
 import com.kakaotechcampus.team16be.auth.dto.KakaoLoginResponse;
 import com.kakaotechcampus.team16be.auth.dto.KakaoTokenResponse;
 import com.kakaotechcampus.team16be.auth.dto.KakaoUserInfoResponse;
 import com.kakaotechcampus.team16be.auth.jwt.JwtProvider;
 import com.kakaotechcampus.team16be.user.domain.User;
 import com.kakaotechcampus.team16be.user.repository.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +27,7 @@ public class KakaoAuthService {
     private final KakaoAuthClient kakaoAuthClient;
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final KakaoProperties kakaoProperties;
 
     @Transactional
     public KakaoLoginResponse loginWithCode(String code, HttpServletRequest request) {
@@ -47,6 +56,22 @@ public class KakaoAuthService {
     @Transactional
     public void logout(HttpServletRequest request) {
 
+    }
+
+    @Operation(summary = "카카오 로그인 진입", description = "카카오 인증 페이지로 리다이렉트합니다.")
+    @GetMapping("/kakao")
+    public ResponseEntity<Void> redirectToKakao() {
+        String uri = UriComponentsBuilder
+                .fromUriString("https://kauth.kakao.com/oauth/authorize")
+                .queryParam("client_id", kakaoProperties.getClientId())
+                .queryParam("redirect_uri", kakaoProperties.getRedirectUri())
+                .queryParam("response_type", "code")
+                .build()
+                .toUriString();
+
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(uri))
+                .build();
     }
 
 }
