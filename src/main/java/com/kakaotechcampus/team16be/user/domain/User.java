@@ -2,6 +2,7 @@ package com.kakaotechcampus.team16be.user.domain;
 
 import com.kakaotechcampus.team16be.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -46,8 +47,9 @@ public class User extends BaseEntity {
         this.verificationStatus = VerificationStatus.UNVERIFIED;
     }
 
-    @Builder
-    public User(Long id, String kakaoId, String nickname, String profileImageUrl, Role role, VerificationStatus verificationStatus, String studentIdImageUrl, Long score) {
+
+    @Builder(access = AccessLevel.PACKAGE)
+    private User(Long id, String kakaoId, String nickname, String profileImageUrl, Role role, VerificationStatus verificationStatus, String studentIdImageUrl, Long score) {
         this.id = id;
         this.kakaoId = kakaoId;
         this.nickname = nickname;
