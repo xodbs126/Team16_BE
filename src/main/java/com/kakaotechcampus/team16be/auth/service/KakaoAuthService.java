@@ -8,6 +8,7 @@ import com.kakaotechcampus.team16be.auth.dto.KakaoUserInfoResponse;
 import com.kakaotechcampus.team16be.auth.jwt.JwtProvider;
 import com.kakaotechcampus.team16be.user.domain.User;
 import com.kakaotechcampus.team16be.user.repository.UserRepository;
+import com.kakaotechcampus.team16be.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class KakaoAuthService {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
     private final KakaoProperties kakaoProperties;
+    private final UserService userService;
 
     @Transactional
     public KakaoLoginResponse loginWithCode(String code, HttpServletRequest request) {
@@ -41,6 +43,7 @@ public class KakaoAuthService {
 
 
         // 3. kakaoId로 기존 회원 조회, 없으면 kakaoId 저장
+
         User user = userRepository.findByKakaoId(kakaoId)
                 .orElseGet(() -> {
                     User newUser = new User(kakaoId);
