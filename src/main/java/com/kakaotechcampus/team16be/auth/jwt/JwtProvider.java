@@ -3,49 +3,50 @@ package com.kakaotechcampus.team16be.auth.jwt;
 import com.kakaotechcampus.team16be.auth.exception.JwtErrorCode;
 import com.kakaotechcampus.team16be.auth.exception.JwtException;
 import com.kakaotechcampus.team16be.user.domain.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 
 @Component
 public class JwtProvider {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private final SecretKey secretKey;
+    private final long accessTokenExpirationSeconds;
+    private final java.time.Clock clock; // 발급측 시간
+    private final io.jsonwebtoken.Clock jwtClock; //검증 측 시간
 
-    private static final int ACCESS_TOKEN_EXPIRATION = 60 * 60 * 24 * 365;//테스트 편의를 위해 1년으로 설정
-
-    private SecretKey secretKey;
-
-    @PostConstruct
-    public void init() {
-        // secretKey 초기화
+    public JwtProvider(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.access-token-expiration-seconds}") long accessTokenExpirationSeconds,
+           java.time.Clock clock) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    }
+        this.accessTokenExpirationSeconds = accessTokenExpirationSeconds;
+        this.clock = clock;
+        this.jwtClock = ()->Date.from(clock.instant());
 
+    }
     /**
      * JWT 토큰 생성
      * @param user 토큰에 담을 User 정보
      * @return JWT 문자열
      */
     public String createToken(User user) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + ACCESS_TOKEN_EXPIRATION * 1000L);
+        Instant now = clock.instant();
+        Instant expiryDate = now.plusSeconds(accessTokenExpirationSeconds);
 
         return Jwts.builder()
                 .setSubject(String.valueOf(user.getId()))
                 .claim("kakaoId", user.getKakaoId())
                 .claim("role", user.getRole().name())
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(expiryDate))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -59,10 +60,15 @@ public class JwtProvider {
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(secretKey)
+                    .setClock(jwtClock)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (Exception e) {
+        } catch (ExpiredJwtException e) {
+            throw new JwtException(JwtErrorCode.EXPIRED_TOKEN);
+        } catch (SignatureException e) {
+            throw new JwtException(JwtErrorCode.INVALID_SIGNATURE);
+        } catch (MalformedJwtException |UnsupportedJwtException | IllegalArgumentException e) {
             throw new JwtException(JwtErrorCode.WRONG_HEADER_TOKEN);
         }
     }

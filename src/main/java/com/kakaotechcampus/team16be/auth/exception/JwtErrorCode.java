@@ -10,9 +10,12 @@ import org.springframework.http.HttpStatus;
 public enum JwtErrorCode implements ErrorCode {
     // 401 Unauthorized
     WRONG_HEADER_TOKEN(HttpStatus.UNAUTHORIZED,"AUTH-001", "잘못된 토큰입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-002", "만료된 토큰입니다."),
+    INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "AUTH-003", "잘못된 서명입니다."),
+
 
     // 403 Forbidden
-    NOT_ADMIN(HttpStatus.FORBIDDEN,"AUTH-002", "관리자 권한이 없습니다." );
+    NOT_ADMIN(HttpStatus.FORBIDDEN,"AUTH-004", "관리자 권한이 없습니다." );
 
     private final HttpStatus status; // HTTP 상태 코드
     private final String code;
