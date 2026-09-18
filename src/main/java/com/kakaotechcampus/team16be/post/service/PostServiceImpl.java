@@ -1,17 +1,11 @@
 package com.kakaotechcampus.team16be.post.service;
 
-import com.kakaotechcampus.team16be.aws.service.S3UploadPresignedUrlService;
-import com.kakaotechcampus.team16be.comment.service.CommentFacadeService;
-import com.kakaotechcampus.team16be.comment.service.CommentService;
 import com.kakaotechcampus.team16be.group.domain.Group;
 import com.kakaotechcampus.team16be.group.service.GroupService;
 import com.kakaotechcampus.team16be.groupMember.domain.GroupMember;
 import com.kakaotechcampus.team16be.groupMember.service.GroupMemberService;
-import com.kakaotechcampus.team16be.like.dto.PostLikeResponse;
-import com.kakaotechcampus.team16be.like.service.PostLikeService;
 import com.kakaotechcampus.team16be.post.domain.Post;
 import com.kakaotechcampus.team16be.post.dto.CreatePostRequest;
-import com.kakaotechcampus.team16be.post.dto.GetPostResponse;
 import com.kakaotechcampus.team16be.post.dto.UpdatePostRequest;
 import com.kakaotechcampus.team16be.post.exception.PostErrorCode;
 import com.kakaotechcampus.team16be.post.exception.PostException;
@@ -21,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +32,7 @@ public class PostServiceImpl implements PostService {
         groupMember.checkUserIsActive();
 
         Post post = Post.createPost(
-                user.getNickname(),
+                user,
                 targetGroup,
                 createPostRequest.title(),
                 createPostRequest.content(),
