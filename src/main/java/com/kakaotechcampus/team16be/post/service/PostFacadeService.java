@@ -7,6 +7,7 @@ import com.kakaotechcampus.team16be.group.service.GroupService;
 import com.kakaotechcampus.team16be.like.dto.PostLikeResponse;
 import com.kakaotechcampus.team16be.like.service.PostLikeService;
 import com.kakaotechcampus.team16be.post.domain.Post;
+import com.kakaotechcampus.team16be.post.domain.PostImage;
 import com.kakaotechcampus.team16be.post.dto.GetPostResponse;
 import com.kakaotechcampus.team16be.post.exception.PostErrorCode;
 import com.kakaotechcampus.team16be.post.exception.PostException;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -35,12 +37,15 @@ public class PostFacadeService {
         Post post = postRepository.findByIdAndGroup(postId, targetGroup)
                 .orElseThrow(() -> new PostException(PostErrorCode.POST_NOT_FOUND));
 
-        Integer commentCount = commentFacadeService.getCommentsByPostId(postId).size();
+        Integer commentCount = commentFacadeService.getCommentCount(postId);
         PostLikeResponse postLikeResponse = postLikeService.getPostLikeInfo(user, postId);
 
-        List<String> fullURLs = post.getImageUrls().stream()
+
+        List<String> fullURLs = post.getImages().stream()
+                .map(PostImage::getImgUrl)
                 .map(s3UploadPresignedUrlService::getPublicUrl)
                 .toList();
+
 
         return GetPostResponse.from(post, fullURLs, commentCount, postLikeResponse.isLiked());
     }
@@ -52,10 +57,11 @@ public class PostFacadeService {
 
         return posts.stream()
                 .map(post -> {
-                    List<String> fullURLs = post.getImageUrls().stream()
+                    List<String> fullURLs = post.getImages().stream()
+                            .map(PostImage::getImgUrl)
                             .map(s3UploadPresignedUrlService::getPublicUrl)
                             .toList();
-                    Integer commentCount = commentFacadeService.getCommentsByPostId(post.getId()).size();
+                    Integer commentCount = commentFacadeService.getCommentCount(post.getId());
                     PostLikeResponse postLikeResponse = postLikeService.getPostLikeInfo(user, post.getId());
                     return GetPostResponse.from(post, fullURLs, commentCount,postLikeResponse.isLiked());
                 })

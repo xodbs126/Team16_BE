@@ -19,7 +19,7 @@ public record GetPostResponse(
     public static GetPostResponse from(Post post, List<String> fullURLs, Integer commentCount, boolean isLike) {
         return new GetPostResponse(
                 post.getId(),
-                post.getAuthor(),
+                post.getAuthor().getNickname(),
                 post.getTitle(),
                 post.getContent(),
                 fullURLs,
