@@ -20,6 +20,7 @@ public class Post extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     private String author;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -56,13 +57,13 @@ public class Post extends BaseEntity {
     }
 
     public Post updatePost(String title, String content, List<String> imageUrls) {
-        if (title != null || !(title.isBlank())) {
+        if (!(title == null) && !(title.isBlank())) {
             this.title = title;
         }
-        if (content != null || (!content.isBlank())) {
+        if (!(content == null) && !(content.isBlank())) {
             this.content = content;
         }
-        if (imageUrls != null || !(imageUrls.isEmpty())) {
+        if (!(imageUrls == null) && !(imageUrls.isEmpty())) {
             this.imageUrls = imageUrls;
         }
         return this;
