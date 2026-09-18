@@ -32,7 +32,7 @@ public class Post extends BaseEntity {
     @Column(nullable = false, length = 100)
     private String title;
 
-    @Column(length = 1000)
+    @Column(length = 500)
     private String content;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true, cascade = CascadeType.ALL)
