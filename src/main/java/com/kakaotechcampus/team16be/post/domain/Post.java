@@ -35,8 +35,8 @@ public class Post extends BaseEntity {
     @Column(length = 1000)
     private String content;
 
-
-    private List<String> imageUrls = new ArrayList<>();
+    @OneToMany(mappedBy = "post", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<PostImage> images = new ArrayList<>();
 
     private Long likeCount = 0L;
 
@@ -46,11 +46,11 @@ public class Post extends BaseEntity {
         this.group = group;
         this.title = title;
         this.content = content;
-        this.imageUrls = imageUrls;
+        addImages(imageUrls);
     }
 
     public static Post createPost(User author, Group group, String title, String content, List<String> imageUrls) {
-        return com.kakaotechcampus.team16be.post.domain.Post.builder()
+        return Post.builder()
                 .author(author)
                 .group(group)
                 .title(title)
@@ -67,9 +67,20 @@ public class Post extends BaseEntity {
             this.content = content;
         }
         if (!(imageUrls == null) && !(imageUrls.isEmpty())) {
-            this.imageUrls = imageUrls;
+            this.images.clear();
+            addImages(imageUrls);
         }
         return this;
+    }
+
+    public void addImages(List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < imageUrls.size(); i++) {
+            PostImage image = new PostImage(imageUrls.get(i), i, this);
+            this.images.add(image);
+        }
     }
 
     public void increaseLikeCount() {
