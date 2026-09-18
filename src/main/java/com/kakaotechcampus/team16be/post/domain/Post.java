@@ -35,6 +35,7 @@ public class Post extends BaseEntity {
     @Column(length = 1000)
     private String content;
 
+
     private List<String> imageUrls = new ArrayList<>();
 
     private Long likeCount = 0L;

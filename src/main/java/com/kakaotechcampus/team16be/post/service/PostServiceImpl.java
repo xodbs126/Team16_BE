@@ -27,6 +27,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Post createPost(User user, CreatePostRequest createPostRequest) {
+
         Group targetGroup = groupService.findGroupById(createPostRequest.groupId());
         GroupMember groupMember = groupMemberService.findByGroupAndUser(targetGroup, user);
         groupMember.checkUserIsActive();
@@ -51,7 +52,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post findByAuthorAndId(User user, Long postId) {
-        return postRepository.findByAuthorAndId(user.getNickname(), postId)
+
+        return postRepository.findByAuthorAndId(user, postId)
                 .orElseThrow(() -> new PostException(PostErrorCode.POST_NOT_FOUND));
     }
 
